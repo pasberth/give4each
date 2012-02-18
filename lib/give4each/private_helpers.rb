@@ -4,7 +4,7 @@ module Give4Each::PrivateHelpers # :nodoc: all
 
   def allowing_method? f
     [/^of_.*$/, /^and_.*$/].any? { |a| f.to_s =~ a } or
-    [:with].include? f.to_sym
+    [:with, :to, :in].include? f.to_sym
   end
 
 end
