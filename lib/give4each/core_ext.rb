@@ -1,12 +1,5 @@
 class Symbol
   
-  # Create new Give4Each::MethodChain with the Symbol and +args+ and +block+.
-  # *example*:
-  #   :include: examples/with.rb
-  def with *args, &block
-    Give4Each::MethodChain.new self, *args, &block
-  end
-
   # Examples::
   # *of_\**:
   #   :include: examples/of.rb
