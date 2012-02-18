@@ -11,7 +11,7 @@ class Give4Each::MethodChain
   #   :any.with *args, &block
   def initialize method, *args, &block
     raise TypeError, "#{self.class} need to the symbol of the method." unless method.respond_to? :to_sym
-    @current = HasArgs.new method.to_sym, args, block, method(:callback_of_normal)
+    @current = natural method, *args, &block
     @callings = [@current]
   end
 
@@ -25,19 +25,21 @@ class Give4Each::MethodChain
   def method_missing method, *args, &block
     case method.to_s
     when /^of_(.*)$/
-      @current = HasArgs.new $1.to_sym, args, block, method(:callback_of_normal)
+      @current = natural $1, *args, &block
       @callings.unshift @current
     when /^and_(.*)$/
-      @current = HasArgs.new $1.to_sym, args, block, method(:callback_of_normal)
+      @current =  natural $1, *args, &block
       @callings.push @current
     else super
     end
     self
   end
   
-  def callback_of_normal o, has
-    o.send has.method, *has.args, &has.block
+  def natural method, *args, &block
+    HasArgs.new method.to_sym, args, block, lambda { |o, has| o.send has.method, *has.args, &has.block }
   end
+  
+  private :natural
 
   # example:
   #  :include: examples/with.rb
@@ -73,7 +75,7 @@ class Give4Each::MethodChain
   end
 
   def to_proc
-    lambda do |o, *a, &b|
+    lambda do |o, &b|
       @callings.inject o do |o, has|
         has.callback.call o, has
       end
