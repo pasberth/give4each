@@ -69,7 +69,27 @@ class Give4Each::MethodChain
     end
     self
   end
-    
+  
+  def if &condition
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      if condition.call o
+        old.call o, has
+      else
+        o
+      end
+    end
+    self
+  end
+  
+  def unless &condition
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      unless condition.call o then old.call o, has else o end
+    end
+    self
+  end
+  
   def to_sym
     @method
   end
