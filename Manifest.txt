@@ -1,0 +1,11 @@
+lib/give4each.rb
+lib/give4each/core_ext.rb
+lib/give4each/method_chain.rb
+lib/give4each/private_helpers.rb
+History.txt
+README.rdoc
+Rakefile
+examples/and.rb
+examples/example.rb
+examples/of.rb
+examples/with.rb

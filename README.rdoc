@@ -1,0 +1,10 @@
+
+= Give4each
+
+== install
+
+  $ gem install give4each
+  
+== example
+
+  :include: examples/example.rb
