@@ -64,3 +64,9 @@ describe Array do
 end
 
 
+describe Give4Each::MethodChain do
+  it  do
+    a = Give4Each::MethodChain.new :capitalize
+    a.call("hello").should == "Hello"
+  end
+end

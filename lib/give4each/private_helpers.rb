@@ -3,8 +3,8 @@ module Give4Each; end
 module Give4Each::PrivateHelpers # :nodoc: all
 
   def allowing_method? f
-    [/^of_.*$/, /^and_.*$/].any? { |a| f.to_s =~ a } or
-    [:with, :to, :in].include? f.to_sym
+    [:with, :to, :in, :if, :unless].include? f.to_sym or
+    [/^of_.*$/, /^and_.*$/].any?(&:=~.with(f.to_s))
   end
 
 end

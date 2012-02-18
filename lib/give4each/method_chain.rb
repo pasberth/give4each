@@ -27,12 +27,16 @@ class Give4Each::MethodChain
     when /^of_(.*)$/
       @current = natural $1, *args, &block
       @callings.unshift @current
+      return self
     when /^and_(.*)$/
       @current =  natural $1, *args, &block
       @callings.push @current
-    else super
+      return self
     end
-    self
+
+    return to_proc.send method, *args, &block if Proc.instance_methods.include? method
+
+    super
   end
   
   def natural method, *args, &block
