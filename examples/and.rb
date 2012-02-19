@@ -1,4 +1,4 @@
-require 'gvie4each'
+require 'give4each'
 # %w[c++ lisp].map do |a|
 #   a.upcase.concat("er")
 # end
