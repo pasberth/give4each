@@ -32,3 +32,13 @@
   xs.each &:push.to(@array)
 
 
+こういうのも(ry
+
+  f = "hello %s world"
+  %w[ruby python].map { |a| f % a }
+
+だからこう(ry
+
+  %w[ruby python].map &:%.in("hello %s world")
+
+
