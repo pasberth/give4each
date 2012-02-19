@@ -32,10 +32,6 @@ class Give4Each::MethodChain
       @current =  natural $1, *args, &block
       @callings.push @current
       return self
-    when /^\W+$/ # the operator should pass.
-      @current = natural method, *args, &block
-      @callings.unshift @current
-      return self
     end
 
     return to_proc.send method, *args, &block if Proc.instance_methods.include? method
