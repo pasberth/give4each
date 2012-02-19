@@ -17,9 +17,9 @@ class Give4Each::MethodChain
 
   # Examples::
   # *of_\**:
-  #   :include: examples/of.rb
+  #   %w[c++ lisp].map &:upcase.of_concat.with("er") # => ["C++ER", "LISPER"]
   # *and_\**:
-  #   :include: examples/and.rb
+  #   %w[c++ lisp].map &:upcase.and_concat.with("er") # => ["C++er", "LISPer"]
   # You can do the same as +with+ if you pass the +args+.
   #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
   def method_missing method, *args, &block
@@ -46,7 +46,20 @@ class Give4Each::MethodChain
   private :natural
 
   # example:
-  #  :include: examples/with.rb
+  #   # (1..5).map do |i|
+  #   #   i ** 2
+  #   # end
+  #   p (1..5).map &:**.with(2) # => [1, 4, 9, 16, 25]
+  #
+  #   # %w[c++ lisp].map do |a|
+  #   #   a.concat("er").upcase
+  #   # end
+  #   p %w[c++ lisp].map &:upcase.of_concat.with("er") # => ["C++ER", "LISPER"]
+  #
+  #   # %w[c++ lisp].map do |a|
+  #   #   a.upcase.concat("er")
+  #   # end
+  #   p %w[c++ lisp].map &:upcase.and_concat.with("er") # => ["C++er", "LISPer"]
   def with *args, &block
     @current.args = args
     @current.block = block
