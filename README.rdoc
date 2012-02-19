@@ -42,3 +42,6 @@
   %w[ruby python].map &:%.in("hello %s world")
 
 
+== GitHub
+
+  https://github.com/pasberth/give4each
