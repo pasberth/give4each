@@ -1,6 +1,8 @@
 
 = Give4each
 
+https://github.com/pasberth/give4each
+
 == install
 
   $ gem install give4each
@@ -40,8 +42,3 @@
 だからこう(ry
 
   %w[ruby python].map &:%.in("hello %s world")
-
-
-== GitHub
-
-  https://github.com/pasberth/give4each
