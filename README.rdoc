@@ -5,6 +5,30 @@
 
   $ gem install give4each
   
-== example
+== description
 
-  :include: examples/example.rb
+ああああああ
+もうブロックを書くのはうんざりだ!!!
+
+  (1..5).map { |i| i ** 2 }
+
+だからこう書けるようにした
+  
+  (1..5).map &:**.with(2) # => [1, 4, 9, 16, 25]
+
+ああああああ
+こういうのももう嫌だ!!!
+
+  def initialize
+    @stack = []
+  end
+
+  def foo *xs
+    xs.each { |x| @stack.push x  }
+  end
+
+だからこう書けるように(ry
+
+  xs.each &:push.to(@array)
+
+
