@@ -32,6 +32,10 @@ class Give4Each::MethodChain
       @current =  natural $1, *args, &block
       @callings.push @current
       return self
+    when /^\W+$/ # the operator should pass.
+      @current = natural method, *args, &block
+      @callings.unshift @current
+      return self
     end
 
     return to_proc.send method, *args, &block if Proc.instance_methods.include? method
@@ -53,13 +57,17 @@ class Give4Each::MethodChain
     self
   end
   
+  alias a with
+  alias an with
+  alias the with
+  
   # *example*:
   #   a = []
   #   # => [] 
   #   (1..10).each &:push.to(a)
   #   # => 1..10 
   #   a
-  #   # => [1, 4, 9, 16, 25, 36, 49, 64, 81, 100] 
+  #   # => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   def to *receivers
     @current.callback = lambda do |o, has|
       receivers.each &has.method.with(o, *has.args, &has.block); o
