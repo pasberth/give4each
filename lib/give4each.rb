@@ -1,7 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 
 module Give4Each
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
 end
 
 require "give4each/private_helpers"
