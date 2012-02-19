@@ -84,29 +84,17 @@ class Give4Each::MethodChain
     self
   end
   
+  # *example*:
+  #   receiver = "hello %s world"
+  #   %w[ruby python].map &:%.in(receiver) # => ["hello ruby world", "hello python world"] 
+  # *method chain*:
+  #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"] 
+  # You should not use #to for that.
+  #   receiver = "hello %s world"
+  #   %w[ruby python].map &:%.to(receiver) # => ["ruby", "python"]
   def in receiver
     @current.callback = lambda do |o, has|
       receiver.send has.method, o, *has.args, &has.block
-    end
-    self
-  end
-  
-  def if &condition
-    old = @current.callback
-    @current.callback = lambda do |o, has|
-      if condition.call o
-        old.call o, has
-      else
-        o
-      end
-    end
-    self
-  end
-  
-  def unless &condition
-    old = @current.callback
-    @current.callback = lambda do |o, has|
-      unless condition.call o then old.call o, has else o end
     end
     self
   end
