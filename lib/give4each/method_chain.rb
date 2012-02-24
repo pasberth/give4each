@@ -14,7 +14,7 @@ class Give4Each::MethodChain
     @current = natural method, *args, &block
     @callings = [@current]
   end
-
+  
   # Examples::
   # *of_\**:
   #   %w[c++ lisp].map &:upcase.of_concat.with("er") # => ["C++ER", "LISPER"]
@@ -51,21 +51,23 @@ class Give4Each::MethodChain
     self
   end
   
-  # Wrong :( %w[c++ lisp].map &:upcase.of_+("er")
-  # Right :) %w[c++ lisp].map &:upcase.of(:+, "er")
+  # Wrong :(
+  #   %w[c++ lisp].map &:upcase.of_+("er")
+  # Right :)
+  #   %w[c++ lisp].map &:upcase.of(:+, "er")
   def and method, *args, &block
     @current = natural method, *args, &block
     @callings.push @current
     return self
   end
 
+  # For example, I expect the nil is replaced by 0:
+  #
   #    [
   #      [1, 2],
   #      [3],
   #      []
-  #    ].map &:first # => [1, 2, nil]
-  #
-  # I expect the nil is replaced by 0.
+  #    ].map &:first # => [1, 3, nil]
   #
   # But this is needlessly long!:
   #
@@ -73,7 +75,7 @@ class Give4Each::MethodChain
   #     [1, 2],
   #     [3],
   #     []
-  #    ].map { |a| a.first or 0 }
+  #   ].map { |a| a.first or 0 } # => [1, 3, 0]
   #
   # I think I write:
   #
@@ -81,7 +83,7 @@ class Give4Each::MethodChain
   #     [1, 2],
   #     [3],
   #     []
-  #    ].map &:first.or(0)
+  #   ].map &:first.or(0) # => [1, 3, 0]
   #
   def or default_value
     old = @current.callback
@@ -106,6 +108,18 @@ class Give4Each::MethodChain
   #   #   a.upcase.concat("er")
   #   # end
   #   p %w[c++ lisp].map &:upcase.and_concat.with("er") # => ["C++er", "LISPer"]
+  #
+  # the 'a', 'an', and 'the' are aliases for this.
+  #
+  # This is strange in English, is not you?
+  #
+  #   char = 'l'
+  #   %w[hello world].map &:count.with(char) # => [2, 1]
+  #
+  # If you want to use, let's choose what you like.
+  #
+  #   %w[hello world].map &:count.a(char)
+  #   %w[hello world].map &:count.the('l')
   def with *args, &block
     @current.args = args
     @current.block = block
@@ -130,10 +144,11 @@ class Give4Each::MethodChain
     self
   end
   
-  # *example*:
+  # Examples::
+  # example:
   #   receiver = "hello %s world"
   #   %w[ruby python].map &:%.in(receiver) # => ["hello ruby world", "hello python world"] 
-  # *method chain*:
+  # method chain:
   #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"]
   # You should not use #to for that.
   #   receiver = "hello %s world"
