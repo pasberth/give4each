@@ -9,8 +9,9 @@ https://github.com/pasberth/give4each
   
 == description
 
-ああああああ
-もうブロックを書くのはうんざりだ!!!
+(1..5).map { |i| i ** 2 } を (1..5).map &:**.with(2) とか書けるようにする
+
+== usage
 
   (1..5).map { |i| i ** 2 }
 

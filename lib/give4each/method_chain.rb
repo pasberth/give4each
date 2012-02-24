@@ -25,13 +25,9 @@ class Give4Each::MethodChain
   def method_missing method, *args, &block
     case method.to_s
     when /^of_(.*)$/
-      @current = natural $1, *args, &block
-      @callings.unshift @current
-      return self
+      return self.of($1, *args, &block)
     when /^and_(.*)$/
-      @current =  natural $1, *args, &block
-      @callings.push @current
-      return self
+      return self.and($1, *args, &block)
     end
 
     return to_proc.send method, *args, &block if Proc.instance_methods.include? method
@@ -44,6 +40,56 @@ class Give4Each::MethodChain
   end
   
   private :natural
+  
+  # Wrong :(
+  #   %w[c++ lisp].map &:upcase.of_+("er")
+  # Right :)
+  #   %w[c++ lisp].map &:upcase.of(:+, "er")
+  def of method, *args, &block
+    @current = natural method, *args, &block
+    @callings.unshift @current
+    self
+  end
+  
+  # Wrong :( %w[c++ lisp].map &:upcase.of_+("er")
+  # Right :) %w[c++ lisp].map &:upcase.of(:+, "er")
+  def and method, *args, &block
+    @current = natural method, *args, &block
+    @callings.push @current
+    return self
+  end
+
+  #    [
+  #      [1, 2],
+  #      [3],
+  #      []
+  #    ].map &:first # => [1, 2, nil]
+  #
+  # I expect the nil is replaced by 0.
+  #
+  # But this is needlessly long!:
+  #
+  #   [
+  #     [1, 2],
+  #     [3],
+  #     []
+  #    ].map { |a| a.first or 0 }
+  #
+  # I think I write:
+  #
+  #   [
+  #     [1, 2],
+  #     [3],
+  #     []
+  #    ].map &:first.or(0)
+  #
+  def or default_value
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      old.call o, has or default_value
+    end
+    self
+  end
 
   # example:
   #   # (1..5).map do |i|
@@ -88,7 +134,7 @@ class Give4Each::MethodChain
   #   receiver = "hello %s world"
   #   %w[ruby python].map &:%.in(receiver) # => ["hello ruby world", "hello python world"] 
   # *method chain*:
-  #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"] 
+  #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"]
   # You should not use #to for that.
   #   receiver = "hello %s world"
   #   %w[ruby python].map &:%.to(receiver) # => ["ruby", "python"]

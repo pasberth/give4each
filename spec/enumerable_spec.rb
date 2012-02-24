@@ -27,6 +27,14 @@ describe Array do
   it do
     %w[c++ lisp].map(&:upcase.and_concat("er")).should == %w[C++er LISPer]
   end
+
+  it do
+    %w[c++ lisp].map(&:upcase.and(:+).with("er")).should == %w[C++er LISPer]
+  end
+
+  it do
+    %w[c++ lisp].map(&:upcase.and(:+, "er")).should == %w[C++er LISPer]
+  end
   
   it do
     # a, b, c = [], [], []
@@ -57,10 +65,16 @@ describe Array do
   end
   
   it do
-    # [[1,2], [3,4], []].map { |a| a.pop or 0 }
-    [[1,2], [3,4], []].map(&:pop.and_eval("0").if(&:nil?)).should == [2, 4, 0]
+    [
+      [1, 2],
+      [3],
+      []
+    ].map(&:first.or(0)).should == [1, 3, 0]
   end
   
+  it do
+    [0, 2, 3].map(&:at.in(%w[ruby perl python]).or("none")).should == ["ruby", "python", "none"]
+  end
 end
 
 
