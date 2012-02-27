@@ -165,7 +165,7 @@ class Give4Each::MethodChain
   end
 
   def to_proc
-    lambda do |o, &b|
+    lambda do |o|
       @callings.inject o do |o, has|
         has.callback.call o, has
       end
