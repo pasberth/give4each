@@ -11,12 +11,43 @@ describe Symbol do
     it { should == [nil, nil] }
   end
   
+  describe "#of" do
+    let(:receiver) { "ruby" }
+    let(:args) { ["ist"] }
+    let(:result) { :upcase.of(:+, *args).to_proc.call(receiver) }
+    subject { result }
+    it { should == "RUBYIST" }
+  end
+  
+  describe "#and" do
+    let(:receiver) { "ruby" }
+    let(:args) { ["ist"] }
+    let(:result) { :upcase.and(:+, *args).to_proc.call(receiver) }
+    subject { result }
+    it { should == "RUBYist" }
+  end
+  
+  describe "#of_*" do
+    let(:receiver) { "ruby" }
+    let(:args) { ["ist"] }
+    let(:result) { :upcase.of_concat(*args).to_proc.call(receiver) }
+    subject { result }
+    it { should == "RUBYIST" }
+  end
+  
+  describe "#and_*" do
+    let(:receiver) { "ruby" }
+    let(:args) { ["ist"] }
+    let(:result) { :upcase.and_concat(*args).to_proc.call(receiver) }
+    subject { result }
+    it { should == "RUBYist" }
+  end
+  
   describe "#with" do
     let(:receiver) { Array }
     let(:args) { [2] }
     let(:result) { :new.with(*args).to_proc.call(receiver) }
     subject { result }
-
     it { should == [nil, nil] }
   end
   
