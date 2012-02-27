@@ -163,6 +163,14 @@ class Give4Each::MethodChain
     end
     self
   end
+  
+  def rescue return_value=nil
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      old.call o, has rescue return_value
+    end
+    self
+  end
 
   def to_proc
     lambda do |o, &b|

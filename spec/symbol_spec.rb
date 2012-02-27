@@ -85,4 +85,20 @@ describe Symbol do
     end
   end
   
+  describe "#rescue" do
+    let(:array) { ["can_convert_into_symbol", ["Can't convert into Symbol"]] }
+
+    context "default" do
+      let(:result) { array.map &:to_sym.rescue }
+      subject { result }
+      it { should == [:can_convert_into_symbol, nil] }
+    end
+
+    context "speciafy return value." do
+      let(:result) { array.map &:to_sym.rescue(:None) }
+      subject { result }
+      it { should == [:can_convert_into_symbol, :None] }
+    end
+  end
+  
 end
