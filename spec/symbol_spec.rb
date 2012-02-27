@@ -68,7 +68,6 @@ describe Symbol do
     end
   end
 
-  
   describe "#in" do
     let(:receiver) { ["hello"] }
     let(:args) { [["world"]] }

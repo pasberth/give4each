@@ -1,86 +1,93 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe Range do
+describe "when using for Enumerable" do
   
-  it "can give arguments for each." do
-    (1..5).map(&:**.with(2)).should == [1, 4, 9, 16, 25]
-  end
+  let(:langs) { %w[c++ lisp] }
+  let(:suffix) { "er" }
   
-end
-
-describe Array do
-  
-  it do
-    # %w[c++ lisp].map { |l| l.concat("er").upcase }
-    %w[c++ lisp].map(&:upcase.of_concat.with("er")).should == %w[C++ER LISPER]
-  end
-
-  it do
-    %w[c++ lisp].map(&:upcase.of_concat("er")).should == %w[C++ER LISPER]
-  end
-
-  it do
-    # %w[c++ lisp].map { |l| l.upcase.concat("er") }
-    %w[c++ lisp].map(&:upcase.and_concat.with("er")).should == %w[C++er LISPer]
-  end
-
-  it do
-    %w[c++ lisp].map(&:upcase.and_concat("er")).should == %w[C++er LISPer]
-  end
-
-  it do
-    %w[c++ lisp].map(&:upcase.and(:+).with("er")).should == %w[C++er LISPer]
-  end
-
-  it do
-    %w[c++ lisp].map(&:upcase.and(:+, "er")).should == %w[C++er LISPer]
+  context "langs.map &:upcase.of(:+, suffix)" do
+    let(:result) { langs.map &:upcase.of(:+, suffix) }
+    let(:expected_result) { langs.map { |lang| (lang + suffix).upcase } }
+    subject { result }
+    it { should == expected_result }
   end
   
-  it do
-    # a, b, c = [], [], []
-    # %w[hello world].each { |s| [a, b, c].each { |q| q << s.capitalize } 
-    a, b, c = [], [], []
-    %w[hello world].each &:capitalize.and_push.to(a, b, c)
-    a.should == %w[Hello World]
-    b.should == %w[Hello World]
-    c.should == %w[Hello World]
-  end
-
-  it do
-    # a = []
-    # %w[hello world].map { |s| a.push s; s.capitalize }
-    a = []
-    %w[hello world].map(&:capitalize.of_push.to(a)).should == %w[Hello World]
-    a.should == %w[hello world]
-  end
-
-  it do
-    # %w[e l o h].map { |c| "hello".index(c); c }
-    %w[e l o h].map(&:index.to("hello")).should == %w[e l o h]
+  context "langs.map &:upcase.and(:+, suffix)" do
+    let(:result) { langs.map &:upcase.and(:+, suffix) }
+    let(:expected_result) { langs.map { |lang| lang.upcase + suffix } }
+    subject { result }
+    it { should == expected_result }
   end
   
-  it do
-    # %w[e l o h].map { |c| "hello".index(c) }
-    %w[e l o h].map(&:index.in("hello")).should == [1, 2, 4, 0]
+  context "langs.map &:push.to(*receivers)" do
+    let(:receivers) { Array.new(3) { [] } }
+    let(:destructed_receivers) { Array.new(3) { langs } }
+    let(:result) { langs.map &:push.to(*receivers) }
+    let(:expected_result) { langs }
+    before { result }
+
+    describe "receivers" do
+      subject { receivers }
+      it { should == destructed_receivers }
+    end
+    
+    describe "result" do
+      subject { result }
+      it { should == expected_result }
+    end
+  end
+
+  context "llangs.map &:capitalize.and_push.to(*receivers)" do
+    let(:receivers) { Array.new(3) { [] } }
+    let(:destructed_receivers) { Array.new(3) { langs.map { |lang| lang.capitalize } } }
+    let(:result) { langs.map &:capitalize.and_push.to(*receivers) }
+    let(:expected_result) { langs.map &:capitalize }
+    before { result }
+    
+    describe "receivers" do
+      subject { receivers }
+      it { should == destructed_receivers }
+    end
+    
+    describe "result" do
+      subject { result }
+      it { should == expected_result }
+    end
+  end
+
+  context "langs.map &:capitalize.of_push.to(*receivers)" do
+    let(:receivers) { Array.new(3) { [] } }
+    let(:destructed_receivers) { Array.new(3) { langs } }
+    let(:result) { langs.map &:capitalize.of_push.to(*receivers) }
+    let(:expected_result) { langs.map &:capitalize }
+    before { result }
+    
+    describe "receivers" do
+      subject { receivers }
+      it { should == destructed_receivers }
+    end
+    
+    describe "result" do
+      subject { result }
+      it { should == expected_result }
+    end
   end
   
-  it do
-    [
-      [1, 2],
-      [3],
-      []
-    ].map(&:first.or(0)).should == [1, 3, 0]
+  
+  context "langs.map &:+.in(receiver)" do
+    let(:receiver) { "The " }
+    let(:result) { langs.map &:+.in(receiver) }
+    let(:expected_result) { langs.map { |lang| receiver + lang } }
+    subject { result }
+    it { should == expected_result }
   end
   
-  it do
-    [0, 2, 3].map(&:at.in(%w[ruby perl python]).or("none")).should == ["ruby", "python", "none"]
+  context "(1..5).map &:at.in(langs).or(default_value)" do
+    let(:default_value) { "none" }
+    let(:result) { (1..5).map &:at.in(langs).or(default_value) }
+    let(:expected_result) { (1..5).map { |i| langs.at(i) or default_value } }
+    subject { result }
+    it { should == expected_result }
   end
-end
 
-
-describe Give4Each::MethodChain do
-  it  do
-    a = Give4Each::MethodChain.new :capitalize
-    a.call("hello").should == "Hello"
-  end
 end
