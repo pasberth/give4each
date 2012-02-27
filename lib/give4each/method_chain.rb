@@ -35,6 +35,10 @@ class Give4Each::MethodChain
     super
   end
   
+  def respond_to? f
+    super or Proc.instance_methods.include? f.to_sym
+  end
+  
   def natural method, *args, &block
     HasArgs.new method.to_sym, args, block, lambda { |o, has| o.send has.method, *has.args, &has.block }
   end
@@ -158,10 +162,6 @@ class Give4Each::MethodChain
       receiver.send has.method, o, *has.args, &has.block
     end
     self
-  end
-  
-  def to_sym
-    @method
   end
 
   def to_proc
