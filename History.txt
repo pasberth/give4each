@@ -1,4 +1,0 @@
-=== 0.0.3 / 2012-2-24
-* added Symbol#or
-* added Symbol#and
-* added Symbol#of
