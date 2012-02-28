@@ -84,5 +84,12 @@ describe Symbol do
       it { should == ["hello", "world"] }
     end
   end
-  
+
+  describe "#for" do
+    let(:receiver) { { "key1" => 1, "key2" => 2 } }
+    let(:result) { :[].for(["key1", "key2"].enum_for(:map)).to_proc.call(receiver) }
+    let(:expected_result) { ["key1", "key2"].map { |key| receiver[key] } }
+    subject { result }
+    it { should == expected_result }
+  end
 end

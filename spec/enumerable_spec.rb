@@ -134,4 +134,21 @@ describe "when using for Enumerable" do
       it { should == expected_result }
     end
   end
+
+  describe "Symbol#for" do
+
+    context "hashes.map &:[].for(keys.map)" do
+      let(:hashes) do
+        [
+          { "key1" => 1, "key2" => 2 },
+          { "key1" => 3, "key2" => 4 }
+        ]
+      end
+      let(:keys) { ["key1", "key2"] }
+      let(:result) { hashes.map &:[].for(keys.enum_for(:map)) }
+      let(:expected_result) { hashes.map { |hash| keys.map { |key| hash[key] } } }
+      subject { result }
+      it { should == expected_result }
+    end
+  end
 end

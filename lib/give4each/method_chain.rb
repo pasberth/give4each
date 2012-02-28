@@ -164,6 +164,16 @@ class Give4Each::MethodChain
     end
     self
   end
+  
+  def for enumerable
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      enumerable.each do |items|
+        old.call o, HasArgs.new(has.method, items, nil, nil)
+      end
+    end
+    self
+  end
 
   def to_proc
     lambda do |o|
