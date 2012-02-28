@@ -9,7 +9,7 @@ class Give4Each::MethodChain
   #   Give4Eeach::MethodChain.new :any, *args, &block
   # as the:
   #   :any.with *args, &block
-  def initialize method, *args, &block
+  def initialize method, *args, &block # :nodoc:
     raise TypeError, "#{self.class} need to the symbol of the method." unless method.respond_to? :to_sym
     @current = natural method, *args, &block
     @callings = [@current]
@@ -17,9 +17,9 @@ class Give4Each::MethodChain
   
   # Examples::
   # *of_\**:
-  #   %w[c++ lisp].map &:upcase.of_concat.with("er") # => ["C++ER", "LISPER"]
+  #   %w[c++ lisp].map &:upcase.of_concat("er") # => ["C++ER", "LISPER"]
   # *and_\**:
-  #   %w[c++ lisp].map &:upcase.and_concat.with("er") # => ["C++er", "LISPer"]
+  #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
   # You can do the same as +with+ if you pass the +args+.
   #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
   def method_missing method, *args, &block
@@ -97,7 +97,7 @@ class Give4Each::MethodChain
     self
   end
 
-  # example:
+  # *example*:
   #   # (1..5).map do |i|
   #   #   i ** 2
   #   # end
@@ -148,12 +148,13 @@ class Give4Each::MethodChain
     self
   end
   
-  # Examples::
-  # example:
+  # *example*:
   #   receiver = "hello %s world"
   #   %w[ruby python].map &:%.in(receiver) # => ["hello ruby world", "hello python world"] 
-  # method chain:
+  #
+  # *method chain*:
   #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"]
+  #
   # You should not use #to for that.
   #   receiver = "hello %s world"
   #   %w[ruby python].map &:%.to(receiver) # => ["ruby", "python"]
@@ -173,7 +174,7 @@ class Give4Each::MethodChain
   end
 
   def to_proc
-    lambda do |o, &b|
+    lambda do |o|
       @callings.inject o do |o, has|
         has.callback.call o, has
       end

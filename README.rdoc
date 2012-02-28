@@ -3,43 +3,32 @@
 
 https://github.com/pasberth/give4each
 
-== install
+== installation
 
   $ gem install give4each
   
 == description
 
-(1..5).map { |i| i ** 2 } を (1..5).map &:**.with(2) とか書けるようにする
+Can write the oneliner as block like the Symbol#to_proc
 
-== usage
+== examples
 
-  (1..5).map { |i| i ** 2 }
+  require 'give4each'
 
-だからこう書けるようにした
-  
+  # (1..5).map { |i| i ** 2 }
   (1..5).map &:**.with(2) # => [1, 4, 9, 16, 25]
 
-ああああああ
-こういうのももう嫌だ!!!
+  # %w[c++ lisp].map { |lang| (lang + "er").upcase }
+  %w[c++ lisp].map &:upcase.of(:+, "er") # => ["C++ER", "LISPER"]
 
-  def initialize
-    @stack = []
-  end
+  # %w[c++ lisp].map { |lang| lang.upcase + "er" }
+  %w[c++ lisp].map &:upcase.and(:+, "er") # => ["C++er", "LISPer"]
 
-  def foo *xs
-    xs.each { |x| @stack.push x  }
-  end
+  # stack = []
+  # (1..5).each { |item| stack.push item }
+  stack = []
+  (1..5).each &:push.to(stack)
+  stack # => [1, 2, 3, 4, 5]
 
-だからこう書けるように(ry
-
-  xs.each &:push.to(@array)
-
-
-こういうのも(ry
-
-  f = "hello %s world"
-  %w[ruby python].map { |a| f % a }
-
-だからこう(ry
-
-  %w[ruby python].map &:%.in("hello %s world")
+  # %w[ruby python].map { |lang| "hello %s world" % lang }
+  %w[ruby python].map &:%.in("hello %s world") # => ["hello ruby world", "hello python world"]
