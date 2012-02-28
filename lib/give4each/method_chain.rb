@@ -24,6 +24,10 @@ class Give4Each::MethodChain
   #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
   def method_missing method, *args, &block
     case method.to_s
+    when /^of_loose_(.*)$/
+      return self.of_loose($1, *args, &block)
+    when /^and_loose_(.*)$/
+      return self.and_loose($1, *args, &block)
     when /^of_(.*)$/
       return self.of($1, *args, &block)
     when /^and_(.*)$/
@@ -63,6 +67,29 @@ class Give4Each::MethodChain
     @current = natural method, *args, &block
     @callings.push @current
     return self
+  end
+  
+  def loose_natural method, *args, &block
+    callback = lambda do |o, has|
+      begin
+        o.send has.method, *has.args, &has.block
+      rescue NoMethodError
+        nil
+      end
+    end
+    HasArgs.new method.to_sym, args, block, callback
+  end
+  
+  def of_loose method, *args, &block
+    @current = loose_natural method, *args, &block
+    @callings.unshift @current
+    self
+  end
+  
+  def and_loose method, *args, &block
+    @current = loose_natural method, *args, &block
+    @callings.push @current
+    self
   end
 
   # For example, I expect the nil is replaced by 0:
