@@ -100,5 +100,4 @@ describe Symbol do
       it { should == [:can_convert_into_symbol, :None] }
     end
   end
-  
 end
