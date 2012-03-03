@@ -50,6 +50,14 @@ describe Symbol do
     subject { result }
     it { should == [nil, nil] }
   end
+
+  describe "#with args given" do
+    let(:receiver) { Array }
+    let(:args) { [2] }
+    let(:result) { :new.with.to_proc.call(receiver, *args) }
+    subject { result }
+    it { should == [nil, nil] }
+  end
   
   describe "#to" do
     let(:receiver) { ["hello"] }
