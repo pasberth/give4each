@@ -15,4 +15,18 @@ describe Symbol do
       expect { :new.call(2) }.should raise_error NoMethodError
     end
   end
+
+  describe "#[]" do
+
+    context "MUST not destroy origial behavior of the core Symbol#[]", :ruby => 1.9 do
+      it { :new[1].should == 'e' }
+      it { :new[3].should equal nil }
+      it { :new[0, 2].should == 'ne' }
+      it { :new[/./].should == 'n' }
+    end
+    
+    context "avaliable when Ruby1.8", :ruby => 1.8 do
+      it { :new[2].to_proc.call(Array).should == [nil, nil] }
+    end
+  end
 end

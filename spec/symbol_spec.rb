@@ -84,5 +84,4 @@ describe Symbol do
       it { should == ["hello", "world"] }
     end
   end
-  
 end
