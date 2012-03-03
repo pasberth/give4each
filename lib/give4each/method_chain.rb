@@ -113,10 +113,22 @@ class Give4Each::MethodChain # :nodoc: all
   end
   
   allow_symbol_method! :rescue
+  
+  def all
+    old = to_proc
+    @current = Give4Each::MethodChain.natural old
+    @callings = [@current]
+    self
+  end
+  
+  allow_symbol_method! :all
 
-  def to_proc
-    lambda do |o|
-      @callings.inject o do |o, has|
+  def to_proc callings=@callings
+    lambda do |*a|
+      raise ArgumentError, "wrong number of arguments (0 for 1)" if a.empty?
+      o = a.shift
+      callings.first.args += a
+      callings.inject o do |o, has|
         has.callback.call o, has
       end
     end

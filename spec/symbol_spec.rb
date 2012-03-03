@@ -99,5 +99,23 @@ describe Symbol do
       subject { result }
       it { should == [:can_convert_into_symbol, :None] }
     end
+    
+    it "can not rescue the to_sym" do
+      expect { array.map &:to_sym.and_to_s.rescue }.should raise_error NoMethodError
+    end
+
+    it "can rescue the to_sym" do
+      array.map(&:to_sym.and_to_s.all.rescue).should == ["can_convert_into_symbol", nil]
+    end
+  end
+  
+  describe "all" do
+    let(:receiver) { ["hello"] }
+    let(:arg1) { ["world"] }
+    let(:arg2) { ["last"] }
+
+    example do
+      :+.and(:+, arg2).all.in(receiver).to_proc.call(arg1).should == ["hello", "world", "last"]
+    end
   end
 end
