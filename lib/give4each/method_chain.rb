@@ -6,7 +6,14 @@ class Give4Each::MethodChain # :nodoc: all
   HasArgs = Struct.new :callable, :args, :block, :callback
   extend Give4Each::PrivateHelpers
 
-  def initialize callable, *args, &block # :nodoc:
+  def initialize *args, &callable_or_block
+    if args.empty?
+      callable = callable_or_block
+      block = nil
+    else
+      callable = args.shift
+      block = callable_or_block
+    end
     @current = natural callable, *args, &block
     @callings = [@current]
   end
