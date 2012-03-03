@@ -1,13 +1,30 @@
 module Give4Each; end
 
 module Give4Each::PrivateHelpers # :nodoc: all
+  
+  ALLOWING_PATTERNS = []
 
   def allowing_method? f
-    [:with, :a, :an, :the, :to, :in, :and, :of, :or].include? f.to_sym or
-    [/^of_.*$/, /^and_.*$/].any?(&:=~.with(f.to_s)) or
-    (RUBY_VERSION >= "1.9" and [:call].include? f.to_sym)
+    ALLOWING_PATTERNS.any? { |cond| cond.call f }
   end
+  
+  private
 
+    def allow_symbol_method! *fs, &cond
+      fs << cond if block_given?
+      fs.each do |f|
+        ALLOWING_PATTERNS << lambda do |g|
+          g = g.to_s
+          case f
+          when String, Symbol then f.to_s == g
+          when Regexp then f === g
+          when Proc then f.call(g)
+          else
+            false
+          end
+        end
+      end
+    end
 end
 
 module Give4Each

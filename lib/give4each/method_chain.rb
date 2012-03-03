@@ -1,16 +1,16 @@
 
 require 'give4each/private_helpers'
 
-class Give4Each::MethodChain
+class Give4Each::MethodChain # :nodoc: all
 
   HasArgs = Struct.new :method, :args, :block, :callback
+  extend Give4Each::PrivateHelpers
 
   # for example,  
   #   Give4Eeach::MethodChain.new :any, *args, &block
   # as the:
   #   :any.with *args, &block
   def initialize method, *args, &block # :nodoc:
-    raise TypeError, "#{self.class} need to the symbol of the method." unless method.respond_to? :to_sym
     @current = natural method, *args, &block
     @callings = [@current]
   end
@@ -30,145 +30,82 @@ class Give4Each::MethodChain
       return self.and($1, *args, &block)
     end
 
-    return to_proc.send method, *args, &block if Proc.instance_methods.include? method
-
     super
   end
+
+  allow_symbol_method! /^of_(.*)$/, /^and_(.*)$/
   
-  def respond_to? f
-    super or Proc.instance_methods.include? f.to_sym
-  end
-  
+  #
   def natural method, *args, &block
+    raise TypeError, "can't convert #{method.class} into Symbol." unless method.respond_to? :to_sym
     HasArgs.new method.to_sym, args, block, lambda { |o, has| o.send has.method, *has.args, &has.block }
   end
   
   private :natural
   
-  # Wrong :(
-  #   %w[c++ lisp].map &:upcase.of_+("er")
-  # Right :)
-  #   %w[c++ lisp].map &:upcase.of(:+, "er")
-  def of method, *args, &block
-    @current = natural method, *args, &block
-    @callings.unshift @current
-    self
+  #
+  def self.define_symbol_method sym, &f
+    define_method sym do |*args, &block|
+      instance_exec args, block, &f
+      self
+    end
+    allow_symbol_method! sym
+    true
   end
   
-  # Wrong :(
-  #   %w[c++ lisp].map &:upcase.of_+("er")
-  # Right :)
-  #   %w[c++ lisp].map &:upcase.of(:+, "er")
-  def and method, *args, &block
-    @current = natural method, *args, &block
-    @callings.push @current
-    return self
+  private_class_method :define_symbol_method
+
+  define_symbol_method :of do |args, block|
+    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
+    @current = natural *args, &block
+    @callings.unshift @current
   end
 
-  # For example, I expect the nil is replaced by 0:
-  #
-  #    [
-  #      [1, 2],
-  #      [3],
-  #      []
-  #    ].map &:first # => [1, 3, nil]
-  #
-  # But this is needlessly long!:
-  #
-  #   [
-  #     [1, 2],
-  #     [3],
-  #     []
-  #   ].map { |a| a.first or 0 } # => [1, 3, 0]
-  #
-  # I think I write:
-  #
-  #   [
-  #     [1, 2],
-  #     [3],
-  #     []
-  #   ].map &:first.or(0) # => [1, 3, 0]
-  #
-  def or default_value
+  define_symbol_method :and do |args, block|
+    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
+    @current = natural *args, &block
+    @callings.push @current
+  end
+
+  define_symbol_method :or do |args, block|
+    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
+    default_value = args[0]
     old = @current.callback
     @current.callback = lambda do |o, has|
-      old.call o, has or default_value
+      old.call o, has or default_value or  block.call o
     end
-    self
   end
 
-  # *example*:
-  #   # (1..5).map do |i|
-  #   #   i ** 2
-  #   # end
-  #   p (1..5).map &:**.with(2) # => [1, 4, 9, 16, 25]
-  #
-  #   # %w[c++ lisp].map do |a|
-  #   #   a.concat("er").upcase
-  #   # end
-  #   p %w[c++ lisp].map &:upcase.of_concat.with("er") # => ["C++ER", "LISPER"]
-  #
-  #   # %w[c++ lisp].map do |a|
-  #   #   a.upcase.concat("er")
-  #   # end
-  #   p %w[c++ lisp].map &:upcase.and_concat.with("er") # => ["C++er", "LISPer"]
-  #
-  # the 'a', 'an', and 'the' are aliases for this.
-  #
-  # This is strange in English, is not you?
-  #
-  #   char = 'l'
-  #   %w[hello world].map &:count.with(char) # => [2, 1]
-  #
-  # If you want to use, let's choose what you like.
-  #
-  #   %w[hello world].map &:count.a(char)
-  #   %w[hello world].map &:count.the('l')
-  def with *args, &block
+  define_symbol_method :with do |args, block|
     @current.args = args
     @current.block = block
-    self
   end
   
   alias a with
   alias an with
   alias the with
+  allow_symbol_method! :a, :an, :the
   
   if RUBY_VERSION >= "1.9"
     alias call with
+    allow_symbol_method! :call
   end
-  
-  # *example*:
-  #   a = []
-  #   # => [] 
-  #   (1..10).each &:push.to(a)
-  #   # => 1..10 
-  #   a
-  #   # => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-  def to *receivers
+
+  define_symbol_method :to do |receivers, block|
     @current.callback = lambda do |o, has|
       receivers.each &has.method.with(o, *has.args, &has.block); o
     end
-    self
   end
   
-  # *example*:
-  #   receiver = "hello %s world"
-  #   %w[ruby python].map &:%.in(receiver) # => ["hello ruby world", "hello python world"] 
-  #
-  # *method chain*:
-  #   %w[ruby python].map &:%.in(receiver).and_upcase # => ["HELLO RUBY WORLD", "HELLO PYTHON WORLD"]
-  #
-  # You should not use #to for that.
-  #   receiver = "hello %s world"
-  #   %w[ruby python].map &:%.to(receiver) # => ["ruby", "python"]
-  def in receiver
+  define_symbol_method :in do |args, block|
+    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
+    receiver = args[0]
     @current.callback = lambda do |o, has|
       receiver.send has.method, o, *has.args, &has.block
     end
     self
   end
-
+  
   def to_proc
     lambda do |o|
       @callings.inject o do |o, has|
