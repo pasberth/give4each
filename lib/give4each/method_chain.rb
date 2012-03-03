@@ -70,7 +70,7 @@ class Give4Each::MethodChain # :nodoc: all
     default_value = args[0]
     old = @current.callback
     @current.callback = lambda do |o, has|
-      old.call o, has or default_value or  block.call o
+      old.call o, has or default_value
     end
   end
 
