@@ -98,5 +98,4 @@ describe Symbol do
       result.should == "value" 
     end
   end
-  
 end
