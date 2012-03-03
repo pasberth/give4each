@@ -36,31 +36,39 @@ class Give4Each::MethodChain # :nodoc: all
 
   allow_symbol_method! /^of_(.*)$/, /^and_(.*)$/
 
-  define_symbol_method :of do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
-    @current = Give4Each::MethodChain.natural *args, &block
+  def of f, *args, &block
+    @current = Give4Each::MethodChain.natural f, *args, &block
     @callings.unshift @current
+    self
   end
+  
+  allow_symbol_method! :of
 
-  define_symbol_method :and do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
-    @current = Give4Each::MethodChain.natural *args, &block
+  def and f, *args, &block
+    @current = Give4Each::MethodChain.natural f, *args, &block
     @callings.push @current
+    self
   end
+  
+  allow_symbol_method! :and
 
-  define_symbol_method :or do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
-    default_value = args[0]
+  def or default_value
     old = @current.callback
     @current.callback = lambda do |o, has|
       old.call o, has or default_value
     end
+    self
   end
+  
+  allow_symbol_method! :or
 
-  define_symbol_method :with do |args, block|
+  def with *args, &block
     @current.args = args
     @current.block = block
+    self
   end
+  
+  allow_symbol_method! :with
   
   alias a with
   alias an with
@@ -75,22 +83,26 @@ class Give4Each::MethodChain # :nodoc: all
     allow_symbol_method! :[]
   end
 
-  define_symbol_method :to do |receivers, block|
+  def to *receivers
     @current.callback = lambda do |o, has|
       receivers.each do |receiver|
         has.callable.call receiver, o, *has.args, &has.block
       end
       o
     end
+    self
   end
   
-  define_symbol_method :in do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
-    receiver = args[0]
+  allow_symbol_method! :to
+  
+  def in receiver
     @current.callback = lambda do |o, has|
       has.callable.call receiver, o, *has.args, &has.block
     end
+    self
   end
+  
+  allow_symbol_method! :in
   
   def to_proc
     lambda do |o|
