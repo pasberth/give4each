@@ -5,6 +5,11 @@ class Give4Each::MethodChain # :nodoc: all
 
   HasArgs = Struct.new :callable, :args, :block, :callback
   extend Give4Each::PrivateHelpers
+  
+  def self.natural callable, *args, &block
+    callable = Give4Each.try_convert_into_callable! callable
+    HasArgs.new callable.to_proc, args, block, lambda { |o, has| has.callable.call o, *has.args, &has.block }
+  end
 
   def initialize *args, &callable_or_block
     if args.empty?
@@ -14,7 +19,7 @@ class Give4Each::MethodChain # :nodoc: all
       callable = args.shift
       block = callable_or_block
     end
-    @current = natural callable, *args, &block
+    @current = Give4Each::MethodChain.natural callable, *args, &block
     @callings = [@current]
   end
   
@@ -30,58 +35,40 @@ class Give4Each::MethodChain # :nodoc: all
   end
 
   allow_symbol_method! /^of_(.*)$/, /^and_(.*)$/
-  
-  def natural callable, *args, &block
-    if callable.respond_to? :call
-      callable = callable
-    elsif callable.respond_to? :to_proc 
-      callable = callable.to_proc
-    elsif callable.respond_to? :to_sym
-      callable = callable.to_sym.to_proc
-    else
-      raise TypeError, "can't convert #{callable.class} into Proc." 
-    end
-    HasArgs.new callable.to_proc, args, block, lambda { |o, has| has.callable.call o, *has.args, &has.block }
-  end
-  
-  private :natural
-  
-  def self.define_symbol_method sym, &f
-    define_method sym do |*args, &block|
-      instance_exec args, block, &f
-      self
-    end
-    allow_symbol_method! sym
-    true
-  end
-  
-  private_class_method :define_symbol_method
 
-  define_symbol_method :of do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
-    @current = natural *args, &block
+  def of f, *args, &block
+    @current = Give4Each::MethodChain.natural f, *args, &block
     @callings.unshift @current
+    self
   end
+  
+  allow_symbol_method! :of
 
-  define_symbol_method :and do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1..)" if args.count < 1
-    @current = natural *args, &block
+  def and f, *args, &block
+    @current = Give4Each::MethodChain.natural f, *args, &block
     @callings.push @current
+    self
   end
+  
+  allow_symbol_method! :and
 
-  define_symbol_method :or do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
-    default_value = args[0]
+  def or default_value
     old = @current.callback
     @current.callback = lambda do |o, has|
       old.call o, has or default_value
     end
+    self
   end
+  
+  allow_symbol_method! :or
 
-  define_symbol_method :with do |args, block|
+  def with *args, &block
     @current.args = args
     @current.block = block
+    self
   end
+  
+  allow_symbol_method! :with
   
   alias a with
   alias an with
@@ -96,29 +83,26 @@ class Give4Each::MethodChain # :nodoc: all
     allow_symbol_method! :[]
   end
 
-  define_symbol_method :to do |receivers, block|
+  def to *receivers
     @current.callback = lambda do |o, has|
       receivers.each do |receiver|
         has.callable.call receiver, o, *has.args, &has.block
       end
       o
     end
+    self
   end
   
-  define_symbol_method :in do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
-    receiver = args[0]
+  allow_symbol_method! :to
+  
+  def in receiver
     @current.callback = lambda do |o, has|
       has.callable.call receiver, o, *has.args, &has.block
     end
+    self
   end
-  
-  define_symbol_method :as_key do |args, block|
-    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" unless args.empty?
-    @current.callback = lambda do |o, has|
-      o[has.method] or o[has.method.to_s]
-    end
-  end
+
+  allow_symbol_method! :in
   
   def to_proc
     lambda do |o|
