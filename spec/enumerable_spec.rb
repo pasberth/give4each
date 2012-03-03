@@ -1,5 +1,26 @@
 require 'spec_helper'
 
+describe Array do
+
+  describe "#for" do
+
+    context "hashes.map &:keys.map" do
+      let(:structures) do
+        struct = Struct.new :key1, :key2
+        [
+          struct.new(1, 2),
+          struct.new(3, 4)
+        ]
+      end
+      let(:keys) { [:key1, :key2] }
+      let(:result) { structures.map &keys }
+      let(:expected_result) { structures.map { |structure| keys.map { |key| structure.send key } } }
+      subject { result }
+      it { should == expected_result }
+    end
+  end
+end
+
 describe "when using for Enumerable" do
   
   let(:langs) { %w[c++ lisp] }
