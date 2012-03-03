@@ -35,7 +35,6 @@ class Give4Each::MethodChain # :nodoc: all
 
   allow_symbol_method! /^of_(.*)$/, /^and_(.*)$/
   
-  #
   def natural method, *args, &block
     raise TypeError, "can't convert #{method.class} into Symbol." unless method.respond_to? :to_sym
     HasArgs.new method.to_sym, args, block, lambda { |o, has| o.send has.method, *has.args, &has.block }
@@ -43,7 +42,6 @@ class Give4Each::MethodChain # :nodoc: all
   
   private :natural
   
-  #
   def self.define_symbol_method sym, &f
     define_method sym do |*args, &block|
       instance_exec args, block, &f
@@ -103,7 +101,6 @@ class Give4Each::MethodChain # :nodoc: all
     @current.callback = lambda do |o, has|
       receiver.send has.method, o, *has.args, &has.block
     end
-    self
   end
   
   def to_proc
@@ -113,5 +110,4 @@ class Give4Each::MethodChain # :nodoc: all
       end
     end
   end
-
 end
