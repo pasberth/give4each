@@ -3,27 +3,16 @@ require 'give4each/private_helpers'
 
 class Give4Each::MethodChain # :nodoc: all
 
-  HasArgs = Struct.new :method, :args, :block, :callback
+  HasArgs = Struct.new :callable, :args, :block, :callback
   extend Give4Each::PrivateHelpers
 
-  # for example,  
-  #   Give4Eeach::MethodChain.new :any, *args, &block
-  # as the:
-  #   :any.with *args, &block
-  def initialize method, *args, &block # :nodoc:
-    @current = natural method, *args, &block
+  def initialize callable, *args, &block # :nodoc:
+    @current = natural callable, *args, &block
     @callings = [@current]
   end
   
-  # Examples::
-  # *of_\**:
-  #   %w[c++ lisp].map &:upcase.of_concat("er") # => ["C++ER", "LISPER"]
-  # *and_\**:
-  #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
-  # You can do the same as +with+ if you pass the +args+.
-  #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
-  def method_missing method, *args, &block
-    case method.to_s
+  def method_missing f, *args, &block
+    case f.to_s
     when /^of_(.*)$/
       return self.of($1, *args, &block)
     when /^and_(.*)$/
@@ -35,9 +24,17 @@ class Give4Each::MethodChain # :nodoc: all
 
   allow_symbol_method! /^of_(.*)$/, /^and_(.*)$/
   
-  def natural method, *args, &block
-    raise TypeError, "can't convert #{method.class} into Symbol." unless method.respond_to? :to_sym
-    HasArgs.new method.to_sym, args, block, lambda { |o, has| o.send has.method, *has.args, &has.block }
+  def natural callable, *args, &block
+    if callable.respond_to? :call
+      callable = callable
+    elsif callable.respond_to? :to_proc 
+      callable = callable.to_proc
+    elsif callable.respond_to? :to_sym
+      callable = callable.to_sym.to_proc
+    else
+      raise TypeError, "can't convert #{callable.class} into Proc." 
+    end
+    HasArgs.new callable.to_proc, args, block, lambda { |o, has| has.callable.call o, *has.args, &has.block }
   end
   
   private :natural
@@ -94,7 +91,10 @@ class Give4Each::MethodChain # :nodoc: all
 
   define_symbol_method :to do |receivers, block|
     @current.callback = lambda do |o, has|
-      receivers.each &has.method.with(o, *has.args, &has.block); o
+      receivers.each do |receiver|
+        has.callable.call receiver, o, *has.args, &has.block
+      end
+      o
     end
   end
   
@@ -102,7 +102,7 @@ class Give4Each::MethodChain # :nodoc: all
     raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" if args.count != 1
     receiver = args[0]
     @current.callback = lambda do |o, has|
-      receiver.send has.method, o, *has.args, &has.block
+      has.callable.call receiver, o, *has.args, &has.block
     end
   end
   
