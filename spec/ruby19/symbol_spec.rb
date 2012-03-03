@@ -12,7 +12,7 @@ describe Symbol do
     end
 
     it("not avaliable when Ruby1.8", :ruby => 1.8) do
-      expect { :new.call(2).to_proc.call(Array) }.should raise_error NoMethodError
+      expect { :new.call(2) }.should raise_error NoMethodError
     end
   end
 end
