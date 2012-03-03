@@ -133,4 +133,10 @@ class Symbol
       super
     end
   end
+  
+  def as_key
+    Give4Each::MethodChain.new do |o|
+      o[self] or o[to_s]
+    end
+  end
 end
