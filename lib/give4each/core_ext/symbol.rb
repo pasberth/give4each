@@ -119,6 +119,13 @@ class Symbol
   #   %w[ruby python].map &:%.to(receiver) # => ["ruby", "python"]
   # ========================================
 
+  # Examples::
+  # *of_\**:
+  #   %w[c++ lisp].map &:upcase.of_concat("er") # => ["C++ER", "LISPER"]
+  # *and_\**:
+  #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
+  # You can do the same as +with+ if you pass the +args+.
+  #   %w[c++ lisp].map &:upcase.and_concat("er") # => ["C++er", "LISPer"]
   def method_missing f, *a, &b # :nodoc:
     if  Give4Each.allowing_method? f
       Give4Each::MethodChain.new(self).send f, *a, &b
