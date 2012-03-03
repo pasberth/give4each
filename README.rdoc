@@ -17,6 +17,9 @@ Can write the oneliner as block like the Symbol#to_proc
 
   # (1..5).map { |i| i ** 2 }
   (1..5).map &:**.with(2) # => [1, 4, 9, 16, 25]
+  
+  # If you using the Ruby1.9, you can write also in this way:
+  (1..5).map &:**.(2)
 
   # %w[c++ lisp].map { |lang| (lang + "er").upcase }
   %w[c++ lisp].map &:upcase.of(:+, "er") # => ["C++ER", "LISPER"]

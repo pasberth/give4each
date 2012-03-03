@@ -134,6 +134,10 @@ class Give4Each::MethodChain
   alias an with
   alias the with
   
+  if RUBY_VERSION >= "1.9"
+    alias call with
+  end
+  
   # *example*:
   #   a = []
   #   # => [] 
