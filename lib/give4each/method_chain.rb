@@ -106,6 +106,13 @@ class Give4Each::MethodChain # :nodoc: all
     end
   end
   
+  define_symbol_method :as_key do |args, block|
+    raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" unless args.empty?
+    @current.callback = lambda do |o, has|
+      o[has.method] or o[has.method.to_s]
+    end
+  end
+  
   def to_proc
     lambda do |o|
       @callings.inject o do |o, has|

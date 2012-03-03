@@ -84,4 +84,18 @@ describe Symbol do
       it { should == ["hello", "world"] }
     end
   end
+
+  describe "#as_key" do
+    example do
+      receiver = { :key => "value" }
+      result = :key.as_key.to_proc.call(receiver)
+      result.should == "value" 
+    end
+    
+    it "search as the key is a String if :key as Symbol is not found." do
+      receiver = { "key" => "value" }
+      result = :key.as_key.to_proc.call(receiver)
+      result.should == "value" 
+    end
+  end
 end
