@@ -50,6 +50,14 @@ describe Symbol do
     subject { result }
     it { should == [nil, nil] }
   end
+
+  describe "#with args given" do
+    let(:receiver) { Array }
+    let(:args) { [2] }
+    let(:result) { :new.with.to_proc.call(receiver, *args) }
+    subject { result }
+    it { should == [nil, nil] }
+  end
   
   describe "#to" do
     let(:receiver) { ["hello"] }
@@ -96,6 +104,40 @@ describe Symbol do
       receiver = { "key" => "value" }
       result = :key.as_key.to_proc.call(receiver)
       result.should == "value" 
+    end
+  end
+  
+  describe "#rescue" do
+    let(:array) { ["can_convert_into_symbol", ["Can't convert into Symbol"]] }
+
+    context "default" do
+      let(:result) { array.map &:to_sym.rescue }
+      subject { result }
+      it { should == [:can_convert_into_symbol, nil] }
+    end
+
+    context "speciafy return value." do
+      let(:result) { array.map &:to_sym.rescue(:None) }
+      subject { result }
+      it { should == [:can_convert_into_symbol, :None] }
+    end
+    
+    it "can not rescue the to_sym" do
+      expect { array.map &:to_sym.and_to_s.rescue }.should raise_error NoMethodError
+    end
+
+    it "can rescue the to_sym" do
+      array.map(&:to_sym.and_to_s.all.rescue).should == ["can_convert_into_symbol", nil]
+    end
+  end
+  
+  describe "all" do
+    let(:receiver) { ["hello"] }
+    let(:arg1) { ["world"] }
+    let(:arg2) { ["last"] }
+
+    example do
+      :+.and(:+, arg2).all.in(receiver).to_proc.call(arg1).should == ["hello", "world", "last"]
     end
   end
 end

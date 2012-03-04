@@ -41,7 +41,7 @@ class Give4Each::MethodChain # :nodoc: all
     @callings.unshift @current
     self
   end
-  
+
   allow_symbol_method! :of
 
   def and f, *args, &block
@@ -104,9 +104,31 @@ class Give4Each::MethodChain # :nodoc: all
 
   allow_symbol_method! :in
   
-  def to_proc
-    lambda do |o|
-      @callings.inject o do |o, has|
+  def rescue return_value=nil
+    old = @current.callback
+    @current.callback = lambda do |o, has|
+      old.call o, has rescue return_value
+    end
+    self
+  end
+  
+  allow_symbol_method! :rescue
+  
+  def all
+    old = to_proc
+    @current = Give4Each::MethodChain.natural old
+    @callings = [@current]
+    self
+  end
+  
+  allow_symbol_method! :all
+
+  def to_proc callings=@callings
+    lambda do |*a|
+      raise ArgumentError, "wrong number of arguments (0 for 1)" if a.empty?
+      o = a.shift
+      callings.first.args += a
+      callings.inject o do |o, has|
         has.callback.call o, has
       end
     end
