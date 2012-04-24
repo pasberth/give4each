@@ -133,4 +133,10 @@ class Symbol
       super
     end
   end
+  
+  alias as_method to_proc
+  
+  def as_setter
+    proc { |o, *args| o.send(:"#{self}=", *args) }
+  end
 end

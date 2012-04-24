@@ -5,6 +5,33 @@ describe "when using for Enumerable" do
   let(:langs) { %w[c++ lisp] }
   let(:suffix) { "er" }
   
+  describe "Symbol#as_method" do
+    example do
+      [ :upcase, :downcase ].map(&:as_method.and_call("Lisp")).should == %w[LISP lisp]
+    end
+
+    example do
+      [ :upcase, :downcase, [:+, "er"] ].map(&:as_method.and_call("Lisp")).should == %w[LISP lisp Lisper]
+    end
+  end
+  
+  describe "#Symbol#as_setter" do
+
+    example do
+      o = Class.new { attr_accessor :example1, :example2 }.new
+      [ :example1, :example2 ].each &:as_setter.and_call(o, "value")
+      o.example1.should == "value"
+      o.example2.should == "value"
+    end
+
+    example do
+      o = Class.new { attr_accessor :key1, :key2 }.new
+      { :key1 => "value1", :key2 => "value2" }.each &:as_setter.and_call(o)
+      o.key1.should == "value1"
+      o.key2.should == "value2"
+    end
+  end
+
   describe "Symbol#of" do
   
     context "langs.map &:upcase.of(:+, suffix)" do

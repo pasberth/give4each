@@ -10,6 +10,26 @@ describe Symbol do
 
     it { should == [nil, nil] }
   end
+
+  describe "#as_method" do
+    let(:receiver) { Array }
+    let(:args) { [2] }
+    let(:result) { :new.as_method.to_proc.call(receiver, *args) }
+    subject { result }
+
+    it { should == [nil, nil] }
+  end
+
+  describe "#as_setter" do
+    let(:receiver) { Class.new { attr_accessor :example }.new }
+    subject { receiver }
+
+    its(:example) { should be_nil }
+    it do
+      :example.as_setter.to_proc.call(receiver, "example");
+      subject.example.should == "example"
+    end
+  end
   
   describe "#of" do
     let(:receiver) { "ruby" }
