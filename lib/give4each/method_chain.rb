@@ -78,9 +78,6 @@ class Give4Each::MethodChain # :nodoc: all
   if RUBY_VERSION >= "1.9"
     alias call with
     allow_symbol_method! :call
-  else
-    alias [] with
-    allow_symbol_method! :[]
   end
 
   def to *receivers
